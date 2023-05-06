@@ -1,15 +1,13 @@
 <template>
     <div class="container-fluid">
-    <navbar-view></navbar-view>
-    <video-player></video-player>
+        <navbar-view></navbar-view>
     </div>
 </template>
 
 <script>
-import NavbarView from "@/views/NavbarView.vue";
-import VideoPlayer from "@/views/VideoPlayer.vue";
+import NavbarView from "@/components/NavbarView.vue";
 
 export default {
-    components: {NavbarView, VideoPlayer}
+    components: {NavbarView}
 }
 </script>
