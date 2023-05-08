@@ -1,14 +1,13 @@
 package specification.controller;
 
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.ResourceRegion;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import specification.service.StreamingService;
+import org.springframework.core.io.support.ResourceRegion;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
@@ -21,11 +20,17 @@ public class StreamingController {
     }
 
 
-    /*@GetMapping(value="/{title}", produces = "video/mp4")
-    public Mono<Resource> getVideos(@PathVariable String title, @RequestHeader("Range") String range) {
-        System.out.println("range in bytes: " + range);
-        return streamingService.getVideo(title);
-    }*/
+//    @GetMapping(value="/video/{title}", produces = "video/mp4")
+//    public Mono<Resource> getVideos(@PathVariable String title, @RequestHeader("Range") String range, HttpServletResponse response) {
+//        System.out.println("range in bytes: " + range);
+//        response.setContentType("video/mp4");
+//        return streamingService.getVideo(title);
+//    }
+
+//    @GetMapping(value="/video/{title}")
+//    public String getVideos(@PathVariable String title) throws IOException{
+//        return streamingService.getVideoProperties(title);
+//    }
 
     @GetMapping(value="video/{title}", produces = "video/mp4")
     public ResponseEntity<ResourceRegion> getVideos(@PathVariable String title,
@@ -35,4 +40,10 @@ public class StreamingController {
         return streamingService.getVideo(title, rangeHeader);
 
     }
+
+
+//    public void myChunkDivider(@PathVariable String path, HttpRequest request) {
+//        HttpHeaders headers = request.getHeaders();
+//        headers.
+//    }
 }

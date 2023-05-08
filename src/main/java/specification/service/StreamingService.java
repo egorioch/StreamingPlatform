@@ -1,5 +1,8 @@
 package specification.service;
 
+import com.google.gson.Gson;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -8,7 +11,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+
 
 @Service
 public class StreamingService {
@@ -16,13 +22,36 @@ public class StreamingService {
 
     @Autowired
     private ResourceLoader resourceLoader;
-
+//
 //    public Mono<Resource> getVideo(String title) {
 //        return Mono.fromSupplier(() ->
 //                resourceLoader.getResource(String.format(FORMAT, title)));
 //    }
 
+//    public String getVideoProperties(String title) throws IOException {
+//        File file = new File("/home/egor/Документы/java/java Intellij/technical_specification_zel/src/main/resources/video/" + title + ".mp4");
+//        Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
+//        HashMap<String, Object> hashMap = new HashMap<>();
+//
+//        System.out.println("size" + resource.contentLength());
+//
+//        IsoFile isoFile = new IsoFile(file);
+//        MovieHeaderBox mhb = isoFile.getMovieBox().getMovieHeaderBox();
+//        System.out.println("duration: " + isoFile.getMovieBox().getMovieHeaderBox().getDuration());
+//        System.out.println("mhb.getSize: " + mhb.getSize());
+//        System.out.println("mhb.getTimescale: " + mhb.getTimescale());
+//        long timeBytes =  mhb.getDuration() / mhb.getTimescale();
+//        System.out.println("timeBytes: " + timeBytes);
+//
+//        Gson gson = new Gson();
+//        hashMap.put("sizeBytes: ", timeBytes);
+//        String jsonAns = gson.toJson(hashMap);
+//        System.out.println("jsonAns: " + jsonAns);
+//        return jsonAns;
+//    }
+
     public ResponseEntity<ResourceRegion> getVideo(String title, String rangeHeader) throws IOException {
+
         Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
 
         long resourceLength = resource.contentLength();
