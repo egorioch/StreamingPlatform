@@ -1,7 +1,7 @@
 //отправка пикчи на сервер
 export function loadPictureToServer(dataURI, timeOnTheLine) {
   let xhr = new XMLHttpRequest();
-  xhr.open('POST', `/video/${timeOnTheLine}/load`, true);
+  xhr.open('POST', `http://localhost:8080/video/${timeOnTheLine}/load`, true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.send(encodeURI('image=' + dataURI));
 
