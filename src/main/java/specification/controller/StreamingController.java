@@ -27,10 +27,10 @@ public class StreamingController {
 //        return streamingService.getVideo(title);
 //    }
 
-//    @GetMapping(value="/video/{title}")
-//    public String getVideos(@PathVariable String title) throws IOException{
-//        return streamingService.getVideoProperties(title);
-//    }
+    @GetMapping(value="/video/{title}/info")
+    public String getVideos(@PathVariable String title) throws IOException{
+        return streamingService.getVideoProperties(title);
+    }
 
     @GetMapping(value="video/{title}", produces = "video/mp4")
     public ResponseEntity<ResourceRegion> getVideos(@PathVariable String title,

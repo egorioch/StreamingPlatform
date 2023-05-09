@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import StreamShotView from "@/views/StreamShotView.vue";
-import VideoPlayer from "@/views/VideoPlayer.vue"
+// import VideoPlayer from "@/views/VideoPlayer.vue"
+import AbstractPlayer from "@/views/AbstractPlayer.vue";
 
 export default createRouter({
   history: createWebHistory(),
@@ -12,8 +13,8 @@ export default createRouter({
     },
     {
       path: "/video/:title",
-      name: 'VideoPlayer',
-      component: VideoPlayer
+      name: 'AbstractPlayer',
+      component: AbstractPlayer
     }
 
   ]

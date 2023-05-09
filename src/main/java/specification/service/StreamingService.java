@@ -28,27 +28,28 @@ public class StreamingService {
 //                resourceLoader.getResource(String.format(FORMAT, title)));
 //    }
 
-//    public String getVideoProperties(String title) throws IOException {
-//        File file = new File("/home/egor/Документы/java/java Intellij/technical_specification_zel/src/main/resources/video/" + title + ".mp4");
-//        Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
-//        HashMap<String, Object> hashMap = new HashMap<>();
-//
-//        System.out.println("size" + resource.contentLength());
-//
-//        IsoFile isoFile = new IsoFile(file);
-//        MovieHeaderBox mhb = isoFile.getMovieBox().getMovieHeaderBox();
-//        System.out.println("duration: " + isoFile.getMovieBox().getMovieHeaderBox().getDuration());
-//        System.out.println("mhb.getSize: " + mhb.getSize());
-//        System.out.println("mhb.getTimescale: " + mhb.getTimescale());
-//        long timeBytes =  mhb.getDuration() / mhb.getTimescale();
-//        System.out.println("timeBytes: " + timeBytes);
-//
-//        Gson gson = new Gson();
-//        hashMap.put("sizeBytes: ", timeBytes);
-//        String jsonAns = gson.toJson(hashMap);
-//        System.out.println("jsonAns: " + jsonAns);
-//        return jsonAns;
-//    }
+    /**
+     * получаем информацию о видеофайле
+     * @param title название mp4
+     * @return json
+     */
+    public String getVideoProperties(String title) throws IOException {
+        File file = new File("/home/egor/Документы/java/java Intellij/technical_specification_zel/src/main/resources/video/" + title + ".mp4");
+        Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
+        HashMap<String, Object> hashMap = new HashMap<>();
+
+        IsoFile isoFile = new IsoFile(file);
+        MovieHeaderBox mhb = isoFile.getMovieBox().getMovieHeaderBox();
+
+        long timeBytes =  mhb.getDuration() / mhb.getTimescale();
+        System.out.println("timeBytes: " + timeBytes);
+
+        Gson gson = new Gson();
+        hashMap.put("size", resource.contentLength());
+        hashMap.put("duration", longToSeconds(mhb.getDuration()));
+
+        return gson.toJson(hashMap);
+    }
 
     public ResponseEntity<ResourceRegion> getVideo(String title, String rangeHeader) throws IOException {
 
@@ -59,15 +60,16 @@ public class StreamingService {
 
         //позволяет отправить лишь определенное число байтов в response
         ResourceRegion resourceRegion = resourceRegion(resource, rangeHeader, resourceLength);
-        System.out.println("resourceReg_getCount: " + resourceRegion.getCount());
-        System.out.println("resourceReg_getPosition: " + resourceRegion.getPosition());
-        System.out.println("resourceReg_getResource: " + resourceRegion.getResource().getFilename());
 
         //забираем хедеры с запроса и устанавливаем свои
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM));
+        System.out.println("getPOSITION: " + resourceRegion.getPosition());
+        System.out.println("resourceRegion.getCount(): " + resourceRegion.getCount());
         headers.set("Content-Range", "bytes " + resourceRegion.getPosition() + "-" + resourceRegion.getCount() + "/" + resourceLength);
+        headers.set("Accept-ranges", "bytes");
         headers.setContentLength(resourceRegion.getCount());
+
         System.out.println("headers: " + headers.getFirst("Content-Range"));
 
         return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
@@ -103,7 +105,16 @@ public class StreamingService {
     }
 
 
+    /**
+     * преобразуем long-значение в секунды
+     */
+    private float longToSeconds(long longSeconds) {
+        String stringSeconds = Long.toString(longSeconds);
+        String seconds = stringSeconds.substring(0, stringSeconds.length() - 3);
+        String milliseconds = stringSeconds.substring(stringSeconds.length() - 3);
 
+        return Float.parseFloat(String.format("%s.%s", seconds, milliseconds));
+    }
 
 
 
