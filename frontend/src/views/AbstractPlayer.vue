@@ -34,12 +34,13 @@
         </div>
     </div>
 
-    <div id="my_pic"></div>
+    <button @click="getImages()">Все скриншоты</button>
 </template>
 
 <script>
 import {formatTime} from "@/scripts/player_formatting";
-// import {loadPictureToServer} from "@/scripts/server";
+import {loadPictureToServer, loadPictureFromServer} from "@/scripts/server";
+
 
 export default {
   data() {
@@ -71,7 +72,7 @@ export default {
     play(e) {
       if (this.$refs.video.paused) {
         this.$refs.video.play()
-        e.target.textContent = '❚ ❚'
+        e.target.textContent = '❚❚'
       } else {
         this.$refs.video.pause()
         e.target.textContent = '►'
@@ -80,36 +81,30 @@ export default {
     volume(e) {
       this.$refs.video.volume = e.target.value
     },
+
     //изменение progress-бара при нажатии
     progress(e) {
-      console.log('offsetx: ' + e.offsetX);
       let offsetWidth = document.getElementsByClassName('video-progress')[0].offsetWidth;
       const progressTime = (e.offsetX / offsetWidth) * this.$refs.video.duration
       this.$refs.video.currentTime = progressTime
     },
-    async screenshot() {
+
+    //нужно сделать ещё одну функцию, привязывающую на несколько секунд надпись о сделанном скриншоте
+    screenshot() {
       let canvas = document.createElement('canvas');
       canvas.width = 720;
-      console.log('width: ' + canvas.width);
       canvas.height = 480;
+
       let ctx = canvas.getContext('2d');
       ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
-      document.getElementById('my_pic').appendChild(ctx.canvas);
-      let currentTime = this.$refs.video.currentTime + "";
+      // document.getElementById('my_pic').appendChild(ctx.canvas);
 
-      let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
-      let formData = new FormData();
-      formData.append("image", imageBlob, "image.png");
+      let currentTime = this.$refs.video.currentTime.toPrecision(4) + "";
+      loadPictureToServer(canvas, currentTime);
+    },
 
-      await fetch(`http://localhost:8080/video/${currentTime}/load`, {
-        method: 'POST',
-        body: formData,
-        // headers: {
-        //   'Content-Type': 'multipart/form-data'
-        // }
-      });
-      //loadPictureToServer(dataURI, this.$refs.video.currentTime);
-
+    getImages() {
+      loadPictureFromServer();
     }
   }
 }

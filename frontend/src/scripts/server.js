@@ -1,30 +1,21 @@
 //отправка пикчи на сервер
-export function loadPictureToServer(dataURI, timeOnTheLine) {
-  let xhr = new XMLHttpRequest();
-  xhr.open('POST', `http://localhost:8080/video/${timeOnTheLine}/load`, true);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  console.log(dataURI)
-  let encodedString = dataURI.replace(/^data:image\/?[A-z]*;base64,/);
-  xhr.send(encodedString);
+export async function loadPictureToServer(canvas, currentTime) {
+  let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+  let formData = new FormData();
+  formData.append("image", imageBlob, `${currentTime}.jpeg`);
 
-  let decodedString;
-  try {
-    decodedString = window.atob(encodedString);
-  } catch (error) {
-    console.error('Строка говна: ', error);
-  }
+  await fetch(`http://localhost:8080/video/load`, {
+    method: 'POST',
+    body: formData,
+  });
+}
 
-  if (decodedString) {
-    console.log(decodedString); // Output: "Hello, world!"
-  } else {
-    console.error('Раскодированная строка говна: ');
-  }
+export async function loadPictureFromServer() {
+  let response = await fetch("http://localhost:8080/video/all_images")
+    .then(resp => resp.json())
+    .catch(error => 'Failed to get images! ' + error);
 
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      console.log('Изображение загружено успешно!')
-    } else {
-      console.error('Ошибка при загрузке изображения на сервер...')
-    }
+  for (let obj in response) {
+    console.log("obj: " + obj);
   }
 }

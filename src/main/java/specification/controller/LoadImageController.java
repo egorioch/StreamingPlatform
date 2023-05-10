@@ -1,5 +1,6 @@
 package specification.controller;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,43 +8,50 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import specification.dto.Image;
+import specification.repo.ImageRepo;
+import specification.service.ImageService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:8000")
 public class LoadImageController {
+    private final ImageService imageService;
+    private final ImageRepo imageRepo;
 
-//    @PostMapping("/video/{timeOnTheLine}/load")
-//    public ResponseEntity<String> uploadImage(@PathVariable String timeOnTheLine, @RequestBody String imageData, @RequestHeader HttpHeaders headers) {
-//        System.out.println("timeOnTheLine: " + timeOnTheLine);
-//        System.out.println("imageData: " + imageData);
-//        System.out.println("headers: ");
-//        System.out.println("content-type: " + headers.getContentType().getType());
-//        System.out.println("content-length: " + headers.getContentLength());
-//
-//        byte[] imageBytes = Base64.getDecoder().decode(imageData.split(",")[1]);
-//
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    public LoadImageController(ImageService imageService,
+                               ImageRepo imageRepo) {
+        this.imageService = imageService;
+        this.imageRepo = imageRepo;
+    }
 
-    @PostMapping("/video/{currentTime}/load")
-    public ResponseEntity<String> uploadImage(@PathVariable String currentTime, @RequestPart("image") MultipartFile imageFile) {
+    @PostMapping("/video/load")
+    public ResponseEntity<String> uploadImage(@RequestPart("image") MultipartFile imageFile) {
         try {
             // Проверка наличия файла
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body("No image file provided");
             }
 
-            // Получение имени файла
-            String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
-            System.out.println("fileNAME: " + fileName);
-
-            // Сохранение файла
-            // Здесь вам нужно добавить код для сохранения файла на диск или другое место хранения
+            imageService.saveImage(imageFile);
 
             return ResponseEntity.ok("Image uploaded successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading image: " + e.getMessage());
         }
+    }
+
+    //возвращает все скриншоты, сделанные за всё время
+    @GetMapping("/video/all_images")
+    public ResponseEntity<List<Image>> getImages() {
+        return ResponseEntity.ok(imageRepo.findAll());
     }
 }

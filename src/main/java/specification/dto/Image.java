@@ -10,13 +10,13 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@ToString(of = {"name"})
+@ToString(of = {"id", "name", "size"})
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private String name;
     private String mimeType;
-    private Long size;
-    private Byte[] content;
+    private long size;
+    private byte[] content;
 }
