@@ -39,7 +39,7 @@
 
 <script>
 import {formatTime} from "@/scripts/player_formatting";
-import {loadPictureToServer} from "@/scripts/server";
+// import {loadPictureToServer} from "@/scripts/server";
 
 export default {
   data() {
@@ -87,7 +87,7 @@ export default {
       const progressTime = (e.offsetX / offsetWidth) * this.$refs.video.duration
       this.$refs.video.currentTime = progressTime
     },
-    screenshot() {
+    async screenshot() {
       let canvas = document.createElement('canvas');
       canvas.width = 720;
       console.log('width: ' + canvas.width);
@@ -95,9 +95,20 @@ export default {
       let ctx = canvas.getContext('2d');
       ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
       document.getElementById('my_pic').appendChild(ctx.canvas);
+      let currentTime = this.$refs.video.currentTime + "";
 
-      let dataURI = canvas.toDataURL('image/jpeg');
-      loadPictureToServer(dataURI, this.$refs.video.currentTime);
+      let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+      let formData = new FormData();
+      formData.append("image", imageBlob, "image.png");
+
+      await fetch(`http://localhost:8080/video/${currentTime}/load`, {
+        method: 'POST',
+        body: formData,
+        // headers: {
+        //   'Content-Type': 'multipart/form-data'
+        // }
+      });
+      //loadPictureToServer(dataURI, this.$refs.video.currentTime);
 
     }
   }
@@ -180,7 +191,7 @@ input[type="range"] {
     -webkit-appearance: none;
     background: transparent;
     margin: 0;
-    width: 75%;
+    width: 55%;
     padding: 0 10px;
 }
 

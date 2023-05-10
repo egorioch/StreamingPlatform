@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import specification.repo.ImageRepo;
 
 @Service
-public class ImageDao {
+public class ImageService {
     private final ImageRepo imageRepo;
-    public ImageDao(ImageRepo imageRepo) {
+    public ImageService(ImageRepo imageRepo) {
         this.imageRepo = imageRepo;
     }
 
