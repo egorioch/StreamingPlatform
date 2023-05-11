@@ -17,9 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:8000")
@@ -51,7 +49,7 @@ public class LoadImageController {
 
     //возвращает все скриншоты, сделанные за всё время
     @GetMapping("/video/all_images")
-    public ResponseEntity<List<Image>> getImages() {
-        return ResponseEntity.ok(imageRepo.findAll());
+    public ResponseEntity<ArrayList<HashMap<String, Object>>> getImages() {
+        return ResponseEntity.ok(imageService.getImageList());
     }
 }

@@ -2,6 +2,7 @@
 export async function loadPictureToServer(canvas, currentTime) {
   let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
   let formData = new FormData();
+  console.log('ImageURL(to server): ' + URL.createObjectURL(imageBlob));
   formData.append("image", imageBlob, `${currentTime}.jpeg`);
 
   await fetch(`http://localhost:8080/video/load`, {
@@ -11,11 +12,39 @@ export async function loadPictureToServer(canvas, currentTime) {
 }
 
 export async function loadPictureFromServer() {
-  let response = await fetch("http://localhost:8080/video/all_images")
-    .then(resp => resp.json())
-    .catch(error => 'Failed to get images! ' + error);
 
-  for (let obj in response) {
-    console.log("obj: " + obj);
-  }
+  return await fetch("http://localhost:8080/video/all_images")
+    .then(resp => resp.json())
+    .then(
+      data => {
+        const result = data.reduce((acc, image) => {
+          const bigBlob = new Blob([image.content], {type: 'image/jpeg'});
+          image.content = URL.createObjectURL(bigBlob);
+          console.log("IMAGE_CONTENT: " + image.content)
+
+
+          acc[image.id] = image;
+          return acc;
+        }, {});
+
+        return result;
+      }
+    )
+    .catch(error => 'Failed to get images! ' + error);
 }
+
+export function checkImgUrl(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = function () {
+      console.log('URL верен')
+      resolve(true);
+    }
+    img.onerror = function () {
+      console.log('URL неверен')
+      resolve(false)
+    }
+    img.src = url
+  })
+}
+

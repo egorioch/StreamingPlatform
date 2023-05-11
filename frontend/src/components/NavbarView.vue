@@ -11,7 +11,7 @@
                         <a href="/" class="nav-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <router-link to="/shots" class="nav-link">Shots</router-link>
+                        <router-link to="/video/screens" class="nav-link">Screenshots</router-link>
                     </li>
 
                 </ul>
