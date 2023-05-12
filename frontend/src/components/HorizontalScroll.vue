@@ -24,6 +24,9 @@
             <div class="text-field">
                 <input id="search-input" placeholder="01:54" class="search-input"
                        v-model="screenSearchTime"/>
+                <div class="valid-search" v-if="!notValidTime">
+                    <button class="button-search" @click="reloadImages()">Получить</button>
+                </div>
             </div>
 
             <div v-if="notValidTime" class="not-valid-container">
@@ -37,7 +40,7 @@
 
 <script>
 import {checkImgUrl} from "@/scripts/server";
-import {timeWithoutExtension, validateHhMm, intervalFromImagesArray} from "@/scripts/player_formatting";
+import {timeWithoutExtension, validateHhMm,  timeIntoNumber} from "@/scripts/player_formatting";
 
 export default {
   data() {
@@ -87,29 +90,38 @@ export default {
     //возвращает время без расширения .jpeg(которое идёт с image.name)
     formatText(timeWithExtension) {
       return timeWithoutExtension(timeWithExtension);
-    }
+    },
 
+    async reloadImages() {
+      let value = timeIntoNumber(this.screenSearchTime);
+
+      let tempArray = {};
+      let i = 0;
+      for (let img in this.images) {
+        let currentImageNumberTime = timeIntoNumber(timeWithoutExtension(this.images[img].name));
+        if (currentImageNumberTime === value) {
+          console.log('условие соблюдено!');
+          tempArray[i] = this.images[img]
+          console.log("JSON.stringify(this.images[img]: " + JSON.stringify(this.images[img]))
+          i++;
+        }
+      }
+
+      this.images = tempArray;
+      // console.log("новоиспеченный объект: " + JSON.stringify(tempArray));
+    }
   },
 
   watch: {
     async screenSearchTime(newTime) {
-      if (validateHhMm(newTime + "")) {
-        const regex = new RegExp('^\\s+');
-        if (newTime === '' || regex.test(newTime)) {
-          console.log('пустой массив')
-          this.images = await this.fetchImages();
-        }
-        else {
-          console.log('соотв по regex')
-          intervalFromImagesArray(newTime, this.images);
-        }
+      console.log('now: ' + this.screenSearchTime)
+      if (this.screenSearchTime === '') {
+        console.log('пустой массив')
         this.notValidTime = false;
+        this.images = await this.fetchImages();
       } else {
-
-        this.notValidTime = true;
+        this.notValidTime = !validateHhMm(newTime + "");
       }
-
-      // console.log("ПРОВЕРКА: " + validateHhMm("11:11:11"))
 
     },
 
@@ -175,6 +187,7 @@ $font-text: sans;
 .search-input {
   border-radius: 5px;
   border: 3px solid $frame-label-color;
+  margin-top: 20px;
 }
 
 .search-label {
@@ -192,6 +205,17 @@ $font-text: sans;
 .not-valid-time-error {
   color: red;
   font-size: 14px;
+}
+
+.valid-search {
+  margin: 10px;
+  display: block;
+}
+
+.button-search {
+  padding: 5px;
+  margin-left: 5px;
+  border-radius: 10px;
 }
 
 </style>
