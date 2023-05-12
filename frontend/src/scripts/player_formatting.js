@@ -1,4 +1,6 @@
-export function formatTime(time, hours) {
+export function formatTime(time) {
+  let hours = (time / 3600) >= 1.0;
+
   if (hours) {
     let h = Math.floor(time / 3600);
         time = time - h * 3600;
@@ -15,21 +17,6 @@ export function formatTime(time, hours) {
   }
 }
 
-export function secondsToTime(secondsMilliseconds) {
-  console.log('secondsMilli: ' + secondsMilliseconds)
-  let formattedSeconds = (secondsMilliseconds).split('.')[0];
-  console.log('formatted seconds:' + formattedSeconds);
-  let hours = 0;
-  let minutes = 0;
-  let seconds = 0;
-
-  if ((hours = Math.floor(formattedSeconds / 3600)) !== 0) { formattedSeconds = formattedSeconds - hours * 3600 }
-  if ((minutes = Math.floor(formattedSeconds / 60)) !== 0) { formattedSeconds = formattedSeconds - minutes * 3600}
-  seconds = formattedSeconds;
-
-  console.log('hours: ' + hours + ", minutes: " + minutes + ", seconds: " + seconds);
-}
-
 Number.prototype.lead0 = function(n) {
   let nz = "" + this;
   while (nz.length < n) {
@@ -38,3 +25,46 @@ Number.prototype.lead0 = function(n) {
   return nz;
 };
 
+// преобразует Time в Number
+export function timeIntoNumber(time) {
+  let array = time.split(":");
+  return (parseInt(array[0], 10) * 60 * 60)
+    + (parseInt(array[1], 10) * 60) + parseInt(array[2], 10);
+}
+
+export function timeWithoutExtension(timeWithExtension) {
+  if (timeWithExtension.length > 5) {
+    console.log("timeWithExtension: " + timeWithExtension)
+    let secondsMilliseconds = timeWithExtension.substr(0, timeWithExtension.length - 5);
+    console.log("secondsMilliseconds: " + secondsMilliseconds)
+    return formatTime(secondsMilliseconds);
+  } else {
+    console.log("ДЛИНА СТРОКИ МЕНЬШЕ: " + timeWithExtension.length)
+  }
+
+}
+
+// Функция возвращает диапазон значений: interval= imageArray.time === value(т.к. округление до секунд,
+// может вернуться сразу несколько значений)
+// currentImageNumberTime - это переменная, преобразованная из "секунды.миллисекунды.jpeg" в секунды
+export function intervalFromImagesArray(value, imageArray) {
+  let tempArray = {};
+  let i = 0;
+  for (let img in imageArray) {
+    console.log("imageName: " + img.name)
+    let currentImageNumberTime = timeIntoNumber(timeWithoutExtension(img.name));
+    if (currentImageNumberTime === value) {
+      tempArray[i] = img;
+      i++;
+    }
+  }
+
+  console.log(JSON.stringify(tempArray));
+}
+
+//проверка на соответствие [00:15]
+export function validateHhMm(inputField) {
+  let regex = new RegExp(/^[0-5][0-9]:[0-5][0-9]$/);
+
+  return regex.test(inputField);
+}

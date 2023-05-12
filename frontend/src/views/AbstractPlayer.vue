@@ -1,40 +1,44 @@
 <template>
-    <div class="video-player">
-        <video
-                ref="video"
-                src="/video/sunset.mp4"
-                poster="/mine.png"
-                class="video"
-        ></video>
+    <div class="abstract-video-player">
+        <div class="video-player">
+            <video
+                    ref="video"
+                    src="/video/sunset.mp4"
+                    poster="/mine.png"
+                    class="video"
+            ></video>
 
-        <div class="player-controls">
-            <div class="video-progress" @click="progress($event)">
-                <div class="video-progress-filled"></div>
+            <div class="player-controls">
+                <div class="video-progress" @click="progress($event)">
+                    <div class="video-progress-filled"></div>
+                </div>
+
+                <button class="play-button" title="Play" @click="play($event)">►</button>
+                <button class="button" @click="screenshot()">Screenshot</button>
+
+
+                <input
+                        type="range"
+                        class="volume"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value="1"
+                        @mousemove="volume($event)"
+                />
+
+                <div class="time">
+                    <span class="current" id="currentTime">{{ videoCurrentTime }}</span>
+                    /
+                    <span class="duration" id="duration">{{ videoDuration }}</span>
+                </div>
             </div>
 
-            <button class="play-button" title="Play" @click="play($event)">►</button>
-            <button class="button" @click="screenshot()">Screenshot</button>
-
-
-            <input
-                    type="range"
-                    class="volume"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value="1"
-                    @mousemove="volume($event)"
-            />
-
-            <div class="time">
-                <span class="current" id="currentTime">{{ videoCurrentTime }}</span>
-                /
-                <span class="duration" id="duration">{{ videoDuration }}</span>
-            </div>
         </div>
-    </div>
 
-    <button @click="getImages()">Все скриншоты</button>
+
+<div id="my_pic"></div>
+    </div>
 </template>
 
 <script>
@@ -46,19 +50,25 @@ export default {
   data() {
     return {
       videoDuration: '00:00',
-      videoCurrentTime: '00:00'
+      videoCurrentTime: '00:00',
+      canvasWidth: 0,
+      canvasHeight: 0
     }
   },
   mounted() {
+    this.$refs.video.addEventListener('loadedmetadata', function () {
+      this.canvasWidth = this.videoWidth;
+      console.log('canvasWidth: ' + this.canvasWidth)
+      this.canvasHeight = this.videoHeight;
+    })
+
     this.$refs.video.addEventListener('canplay', function () {
-      let hasHours = (this.duration / 3600) >= 1.0;
-      document.getElementById('duration').textContent = formatTime(this.duration, hasHours);
+      document.getElementById('duration').textContent = formatTime(this.duration);
     });
 
     this.$refs.video.addEventListener('timeupdate', function () {
       this.videoCurrentTime = this.currentTime;
-      let hasHours = (this.currentTime / 3600) >= 1.0;
-      document.getElementById('currentTime').textContent = formatTime(this.currentTime, hasHours)
+      document.getElementById('currentTime').textContent = formatTime(this.currentTime)
     });
 
     this.$refs.video.addEventListener('timeupdate', function () {
@@ -92,11 +102,15 @@ export default {
     //нужно сделать ещё одну функцию, привязывающую на несколько секунд надпись о сделанном скриншоте
     screenshot() {
       let canvas = document.createElement('canvas');
-      canvas.width = 720;
-      canvas.height = 480;
+      canvas.width = 1280;
+      console.log('canvasWidth: ' + canvas.width)
+      canvas.height = 720;
+      console.log('canvasHeight: ' + canvas.height)
 
       let ctx = canvas.getContext('2d');
+
       ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
+
       // document.getElementById('my_pic').appendChild(ctx.canvas);
 
       let currentTime = this.$refs.video.currentTime.toPrecision(4) + "";
@@ -123,7 +137,7 @@ html {
     box-sizing: inherit;
 }
 
-body {
+.abstract-video-player {
     padding: 0;
     display: flex;
     /*background: 333;*/
@@ -135,7 +149,7 @@ body {
 }
 
 .video-player {
-    max-width: 750px;
+    max-width: 720px;
     position: relative;
     overflow: hidden;
 }
@@ -149,14 +163,14 @@ body {
     position: absolute;
     bottom: 0;
     width: 100%;
-    transform: translateY(100%) translateY(-5px);
+    transform: translateY(100%) translateY(0px);
     transition: 0.3s;
     flex-wrap: wrap;
     background: rgba(0, 0, 0, 0.6);
 }
 
 .video-player:hover .player-controls {
-    transform: translateY(0);
+    transform: translateY(-7px);
 }
 
 .play-button {
@@ -225,7 +239,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .video-player:hover .video-progress {
-    height: 20px;
+    height: 15px;
 }
 
 </style>

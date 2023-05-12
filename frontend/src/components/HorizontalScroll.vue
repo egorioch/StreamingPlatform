@@ -1,32 +1,57 @@
 <template>
-    <div class="horizontal-scroll">
-        <div class="scroll-container" ref="scrollContainer">
-            <div v-for="image in images" :key="image.id" class="image-item">
-                <img :src="image.content" id="imgId" alt="Image" width="180" height="120">
-
+    <div class="all-action-elements">
+        <div class="common-layer">
+            <h2 class="screens-text-above">Screens</h2>
+            <div class="layer-above-scroll">
+                <div class="horizontal-scroll">
+                    <div v-for="image in images" :key="image.id" class="scroll-container" ref="scrollContainer">
+                        <div>
+                            <div>
+                                <a :href="image.content" :data-lightbox="image.name">
+                                    <img :src="image.content" alt="Image"
+                                         class="picture">
+                                </a>
+                                <p class="image-label">{{ formatText(image.name) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-<!--            <img id="ItemPreview" src="" alt="Image"/>-->
-            <div id="currentImage">
-                <!--                <img :src="">-->
+        </div>
+
+        <div class="search-container">
+            <label class="search-label" for="search-input">Поиск кадра</label>
+            <div class="text-field">
+                <input id="search-input" placeholder="01:54" class="search-input"
+                       v-model="screenSearchTime"/>
+            </div>
+
+            <div v-if="notValidTime" class="not-valid-container">
+                <p class="not-valid-time-error">Введено некорректное значение времени</p>
             </div>
         </div>
     </div>
+
+
 </template>
 
 <script>
 import {checkImgUrl} from "@/scripts/server";
+import {timeWithoutExtension, validateHhMm, intervalFromImagesArray} from "@/scripts/player_formatting";
 
 export default {
   data() {
     return {
       images: [],
-      currentImageUrl: ''
+      currentImageUrl: '',
+      screenSearchTime: '',
+      notValidTime: false
     };
   },
   async mounted() {
     try {
       this.images = await this.fetchImages();
-      this.addScrollListener();
+      // this.addScrollListener();
     } catch (error) {
       console.error('Failed to get images!', error);
     }
@@ -58,28 +83,115 @@ export default {
       scrollContainer.scrollLeft += event.deltaY;
       event.preventDefault();
     },
-    // urlByImageSrc(src) {
-    //   const byteArray = new Uint8Array(src);
-    //   const bigBlob = new Blob([byteArray], {type: 'image/jpeg'});
-    //   return URL.createObjectURL(bigBlob);
-    // }
+
+    //возвращает время без расширения .jpeg(которое идёт с image.name)
+    formatText(timeWithExtension) {
+      return timeWithoutExtension(timeWithExtension);
+    }
+
+  },
+
+  watch: {
+    async screenSearchTime(newTime) {
+      if (validateHhMm(newTime + "")) {
+        const regex = new RegExp('^\\s+');
+        if (newTime === '' || regex.test(newTime)) {
+          console.log('пустой массив')
+          this.images = await this.fetchImages();
+        }
+        else {
+          console.log('соотв по regex')
+          intervalFromImagesArray(newTime, this.images);
+        }
+        this.notValidTime = false;
+      } else {
+
+        this.notValidTime = true;
+      }
+
+      // console.log("ПРОВЕРКА: " + validateHhMm("11:11:11"))
+
+    },
+
   }
 };
 </script>
 
-<style scoped>
+
+<style scoped lang="scss">
+$frame-label-color: black;
+$font-text: sans;
+
+.common-layer {
+  height: 100%;
+  background: lavender;
+  color: #fff;
+  font-family: $font-text, serif;
+  font-size: 18px;
+  margin: 40px 15px 15px;
+  border: 5px solid $frame-label-color;
+  padding: 20px;
+  border-radius: 10px/20px;
+}
+
+.screens-text-above {
+  font-weight: 700;
+  text-align: center;
+  color: $frame-label-color;
+}
+
+.image-label {
+  color: $frame-label-color;
+  font-weight: 530;
+  text-align: center;
+}
+
+.layer-above-scroll {
+  padding: 5px;
+}
+
 .horizontal-scroll {
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .scroll-container {
-    display: inline-block;
+  display: inline-block;
 }
 
-.image-item {
-    display: inline-block;
-    padding: 10px;
+.picture {
+  width: 360px;
+  height: 240px;
+  margin: 2px;
 }
+
+.search-container {
+  margin: 30px;
+  text-align: center;
+  width: 100%;
+}
+
+.search-input {
+  border-radius: 5px;
+  border: 3px solid $frame-label-color;
+}
+
+.search-label {
+  font-size: 20px;
+  font-weight: 500;
+  font-family: $font-text, sans;
+}
+
+.not-valid-container {
+  border: red;
+  margin: 20px;
+  padding: 5px;
+}
+
+.not-valid-time-error {
+  color: red;
+  font-size: 14px;
+}
+
 </style>

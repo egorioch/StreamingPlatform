@@ -1,6 +1,7 @@
 //отправка пикчи на сервер
 export async function loadPictureToServer(canvas, currentTime) {
   let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+  console.log("imageBlob: " + JSON.stringify(imageBlob));
   let formData = new FormData();
   console.log('ImageURL(to server): ' + URL.createObjectURL(imageBlob));
   formData.append("image", imageBlob, `${currentTime}.jpeg`);
@@ -12,7 +13,6 @@ export async function loadPictureToServer(canvas, currentTime) {
 }
 
 export async function loadPictureFromServer() {
-
   return await fetch("http://localhost:8080/video/all_images")
     .then(resp => resp.json())
     .then(
@@ -20,9 +20,6 @@ export async function loadPictureFromServer() {
         const result = data.reduce((acc, image) => {
           const bigBlob = new Blob([image.content], {type: 'image/jpeg'});
           image.content = URL.createObjectURL(bigBlob);
-          console.log("IMAGE_CONTENT: " + image.content)
-
-
           acc[image.id] = image;
           return acc;
         }, {});
