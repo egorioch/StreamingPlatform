@@ -22,7 +22,7 @@ public class StreamingService {
 
     @Autowired
     private ResourceLoader resourceLoader;
-//
+
 //    public Mono<Resource> getVideo(String title) {
 //        return Mono.fromSupplier(() ->
 //                resourceLoader.getResource(String.format(FORMAT, title)));
@@ -34,16 +34,12 @@ public class StreamingService {
      * @return json
      */
     public String getVideoProperties(String title) throws IOException {
-        System.out.println("НАЗВАНИЕ ВИДЕО: "+ title);
         File file = new File("/home/egor/Документы/java/java Intellij/technical_specification_zel/src/main/resources/video/" + title + ".mp4");
         Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
         HashMap<String, Object> hashMap = new HashMap<>();
 
         IsoFile isoFile = new IsoFile(file);
         MovieHeaderBox mhb = isoFile.getMovieBox().getMovieHeaderBox();
-
-        long timeBytes =  mhb.getDuration() / mhb.getTimescale();
-        System.out.println("timeBytes: " + timeBytes);
 
         Gson gson = new Gson();
         hashMap.put("size", resource.contentLength());
@@ -52,13 +48,15 @@ public class StreamingService {
         return gson.toJson(hashMap);
     }
 
+    /**
+     * @param title название видеофайла
+     * @param rangeHeader bytes=start-end/size
+     * @return resource в заданном диапазоне
+     */
     public ResponseEntity<ResourceRegion> getVideo(String title, String rangeHeader) throws IOException {
 
         Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
-
         long resourceLength = resource.contentLength();
-        System.out.println("resourceLength: " + resourceLength);
-
         //позволяет отправить лишь определенное число байтов в response
         ResourceRegion resourceRegion = resourceRegion(resource, rangeHeader, resourceLength);
 
@@ -79,20 +77,15 @@ public class StreamingService {
     }
 
     private ResourceRegion resourceRegion(Resource resource, String rangeHeader, long resourceLength) {
-        //при первой загрузке страницы возвращается именно это значение
         if (rangeHeader == null) {
-            System.out.println("range header == null");
             return new ResourceRegion(resource, 0, resourceLength);
         }
 
         HttpRange range = HttpRange.parseRanges(rangeHeader).get(0);
-        System.out.println("range: " + range.toString());
         long start = range.getRangeStart(resourceLength);
-        System.out.println("start: " + range.getRangeStart(resourceLength));
         long end = range.getRangeEnd(resourceLength);
-        System.out.println("end: " + range.getRangeEnd(resourceLength));
         long count = end - start + 1;
-        System.out.println("count: " + count);
+
         return new ResourceRegion(resource, start, count);
     }
 

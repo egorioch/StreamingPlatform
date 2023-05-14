@@ -3,12 +3,10 @@ package specification.controller;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourceRegion;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import specification.service.RangeResource;
 import specification.service.StreamingService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @RestController
