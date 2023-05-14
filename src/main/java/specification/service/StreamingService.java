@@ -29,11 +29,12 @@ public class StreamingService {
 //    }
 
     /**
-     * получаем информацию о видеофайле
+     * информация о видеофайле
      * @param title название mp4
      * @return json
      */
     public String getVideoProperties(String title) throws IOException {
+        System.out.println("НАЗВАНИЕ ВИДЕО: "+ title);
         File file = new File("/home/egor/Документы/java/java Intellij/technical_specification_zel/src/main/resources/video/" + title + ".mp4");
         Resource resource = resourceLoader.getResource(String.format(FORMAT, title));
         HashMap<String, Object> hashMap = new HashMap<>();
@@ -66,7 +67,7 @@ public class StreamingService {
         headers.setContentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM));
         System.out.println("getPOSITION: " + resourceRegion.getPosition());
         System.out.println("resourceRegion.getCount(): " + resourceRegion.getCount());
-        headers.set("Content-Range", "bytes " + resourceRegion.getPosition() + "-" + resourceRegion.getCount() + "/" + resourceLength);
+//        headers.set("Content-Range", "bytes " + resourceRegion.getPosition() + "-" + resourceRegion.getCount() + "/" + resourceLength);
         headers.set("Accept-ranges", "bytes");
         headers.setContentLength(resourceRegion.getCount());
 
@@ -80,6 +81,7 @@ public class StreamingService {
     private ResourceRegion resourceRegion(Resource resource, String rangeHeader, long resourceLength) {
         //при первой загрузке страницы возвращается именно это значение
         if (rangeHeader == null) {
+            System.out.println("range header == null");
             return new ResourceRegion(resource, 0, resourceLength);
         }
 
@@ -95,18 +97,8 @@ public class StreamingService {
     }
 
 
-
-    public void getRange(String path, String clientRange) throws IOException {
-        Resource resource = resourceLoader.getResource(String.format(FORMAT, path));
-        long lengthFile = resource.contentLength();
-        HttpRange range = HttpRange.parseRanges(clientRange).get(0);
-        System.out.println("client range:" + range.toString());
-        System.out.println("length of file: " + lengthFile);
-    }
-
-
     /**
-     * преобразуем long-значение в секунды
+     * long-значение в секунды
      */
     private float longToSeconds(long longSeconds) {
         String stringSeconds = Long.toString(longSeconds);

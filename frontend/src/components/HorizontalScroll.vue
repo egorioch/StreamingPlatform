@@ -40,92 +40,91 @@
 
 <script>
 import {checkImgUrl} from "@/scripts/server";
-import {timeWithoutExtension, validateHhMm,  timeIntoNumber} from "@/scripts/player_formatting";
+import {timeWithoutExtension, validateHhMm, timeIntoNumber} from "@/scripts/player_formatting";
 
 export default {
-  data() {
-    return {
-      images: [],
-      currentImageUrl: '',
-      screenSearchTime: '',
-      notValidTime: false
-    };
-  },
-  async mounted() {
-    try {
-      this.images = await this.fetchImages();
-      // this.addScrollListener();
-    } catch (error) {
-      console.error('Failed to get images!', error);
-    }
-  },
-  methods: {
-    async fetchImages() {
-      try {
-        const response = await fetch("http://localhost:8080/video/all_images");
-        const data = await response.json();
-        const result = data.reduce((acc, image) => {
-          image.content = "data:image/jpeg;base64," + image.content;
-          checkImgUrl(image.content);
-
-          acc[image.id] = image;
-          return acc;
-        }, {});
-
-        return result;
-      } catch (error) {
-        throw new Error('Failed to get images! ' + error);
-      }
+    data() {
+        return {
+            images: [],
+            currentImageUrl: '',
+            screenSearchTime: '',
+            notValidTime: false
+        };
     },
-    addScrollListener() {
-      const scrollContainer = this.$refs.scrollContainer;
-      scrollContainer.addEventListener('wheel', this.handleScroll);
-    },
-    handleScroll(event) {
-      const scrollContainer = this.$refs.scrollContainer;
-      scrollContainer.scrollLeft += event.deltaY;
-      event.preventDefault();
-    },
-
-    //возвращает время без расширения .jpeg(которое идёт с image.name)
-    formatText(timeWithExtension) {
-      return timeWithoutExtension(timeWithExtension);
-    },
-
-    async reloadImages() {
-      let value = timeIntoNumber(this.screenSearchTime);
-
-      let tempArray = {};
-      let i = 0;
-      for (let img in this.images) {
-        let currentImageNumberTime = timeIntoNumber(timeWithoutExtension(this.images[img].name));
-        if (currentImageNumberTime === value) {
-          console.log('условие соблюдено!');
-          tempArray[i] = this.images[img]
-          console.log("JSON.stringify(this.images[img]: " + JSON.stringify(this.images[img]))
-          i++;
+    async mounted() {
+        try {
+            this.images = await this.fetchImages();
+        } catch (error) {
+            console.error('Failed to get images!', error);
         }
-      }
+    },
+    methods: {
+        /**
+         * @returns {Promise<*>} разрешается в ассоциативный массив(keys: id, content, mime_type, name, size)
+         */
+        async fetchImages() {
+            try {
+                const response = await fetch("http://localhost:8080/video/all_images");
+                const data = await response.json();
+                const result = data.reduce((acc, image) => {
+                    //кодировка у создававаемой для картинки ссылки base64.
+                    //Данные идут на сервер и хранятся в бд без этого "префикса"
+                    image.content = "data:image/jpeg;base64," + image.content;
+                    checkImgUrl(image.content);
 
-      this.images = tempArray;
-      // console.log("новоиспеченный объект: " + JSON.stringify(tempArray));
-    }
-  },
+                    acc[image.id] = image;
+                    return acc;
+                }, {});
 
-  watch: {
-    async screenSearchTime(newTime) {
-      console.log('now: ' + this.screenSearchTime)
-      if (this.screenSearchTime === '') {
-        console.log('пустой массив')
-        this.notValidTime = false;
-        this.images = await this.fetchImages();
-      } else {
-        this.notValidTime = !validateHhMm(newTime + "");
-      }
+                return result;
+            } catch (error) {
+                throw new Error('Failed to get images! ' + error);
+            }
+        },
+        //возвращает время без расширения .jpeg(которое идёт с image.name)
+        formatText(timeWithExtension) {
+            return timeWithoutExtension(timeWithExtension);
+        },
 
+        /**
+         * возвращает array[n]?array[0] картинок в случае успешной валидации пользовательского ввода времени
+         * @returns {Promise<void>}
+         */
+        async reloadImages() {
+            let value = timeIntoNumber(this.screenSearchTime);
+
+            let tempArray = {};
+            let i = 0;
+            for (let img in this.images) {
+                let currentImageNumberTime = timeIntoNumber(timeWithoutExtension(this.images[img].name));
+                if (currentImageNumberTime === value) {
+                    tempArray[i] = this.images[img]
+                    i++;
+                }
+            }
+
+            this.images = tempArray;
+        }
     },
 
-  }
+    watch: {
+        /**
+         * проверяет, прошла ли клиентская строка времени валидацию(00:54)
+         * в случае отстутствия любых символов возвращает весь массив скринов
+         * @param newTime клиентская строка времени
+         * @returns {Promise<void>}
+         */
+        async screenSearchTime(newTime) {
+            if (this.screenSearchTime === '') {
+                this.notValidTime = false;
+                this.images = await this.fetchImages();
+            } else {
+                this.notValidTime = !validateHhMm(newTime + "");
+            }
+
+        },
+
+    }
 };
 </script>
 

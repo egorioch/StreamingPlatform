@@ -3,9 +3,9 @@
         <div class="video-player">
             <video
                     ref="video"
-                    src="/video/sunset.mp4"
-                    poster="/mine.png"
+                    poster="/shrek.png"
                     class="video"
+                    id="content-video"
             ></video>
 
             <div class="player-controls">
@@ -15,7 +15,6 @@
 
                 <button class="play-button" title="Play" @click="play($event)">►</button>
                 <button class="button" @click="screenshot()">Screenshot</button>
-
 
                 <input
                         type="range"
@@ -32,95 +31,123 @@
                     /
                     <span class="duration" id="duration">{{ videoDuration }}</span>
                 </div>
+
+                <button class="fullscreen-button" @click="fullscreen()">
+                    <span class="fullscreen-text">[]</span>
+                </button>
             </div>
 
         </div>
 
-
-<div id="my_pic"></div>
     </div>
 </template>
 
 <script>
 import {formatTime} from "@/scripts/player_formatting";
-import {loadPictureToServer, loadPictureFromServer} from "@/scripts/server";
-
+import {loadPictureToServer} from "@/scripts/server";
 
 export default {
-  data() {
-    return {
-      videoDuration: '00:00',
-      videoCurrentTime: '00:00',
-      canvasWidth: 0,
-      canvasHeight: 0
+    data() {
+        return {
+            videoDuration: '00:00',
+            videoCurrentTime: '00:00',
+            canvasWidth: 0,
+            canvasHeight: 0,
+        }
+    },
+    mounted() {
+        /**
+         * возвращаем видео для конкретной страницы
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+            const address = window.location.pathname.split("/").pop();
+            fetch(`http://localhost:8080/video/${address}`, {
+                headers: {
+                    'Range': 'bytes=0-'
+                }
+            })
+                .then(resp => resp.arrayBuffer())
+                .then(videoBytes => {
+                    const blob = new Blob([videoBytes], {type: 'video/mp4'})
+                    let videoUrl = URL.createObjectURL(blob);
+                    document.getElementById('content-video').src = videoUrl;
+                })
+                .catch(err => "error: " + err)
+        });
+
+        //
+        this.$refs.video.addEventListener('loadedmetadata', function () {
+            this.canvasWidth = this.videoWidth;
+            this.canvasHeight = this.videoHeight;
+        })
+
+        //установка длительности видео
+        this.$refs.video.addEventListener('canplay', function () {
+            document.getElementById('duration').textContent = formatTime(this.duration);
+        });
+
+        //обновление времени по событию "timeupdate"
+        this.$refs.video.addEventListener('timeupdate', function () {
+            this.videoCurrentTime = this.currentTime;
+            document.getElementById('currentTime').textContent = formatTime(this.currentTime)
+        });
+
+        this.$refs.video.addEventListener('timeupdate', function () {
+            const percentage = (this.currentTime / this.duration) * 100
+            document.getElementsByClassName('video-progress-filled')[0].style.width = `${percentage}%`
+        });
+
+
+    },
+    methods: {
+        //Play and Pause button
+        play(e) {
+            if (this.$refs.video.paused) {
+                this.$refs.video.play()
+                e.target.textContent = '❚❚'
+            } else {
+                this.$refs.video.pause()
+                e.target.textContent = '►'
+            }
+        },
+        volume(e) {
+            this.$refs.video.volume = e.target.value
+        },
+
+        //изменение progress-бара при нажатии
+        progress(e) {
+            let offsetWidth = document.getElementsByClassName('video-progress')[0].offsetWidth;
+            const progressTime = (e.offsetX / offsetWidth) * this.$refs.video.duration
+            this.$refs.video.currentTime = progressTime;
+        },
+
+        /**
+         * создание холста по событию нажатия на кнопку 'Screenshot'
+         * отправка данных в бд
+         */
+        screenshot() {
+            let canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+
+            let ctx = canvas.getContext('2d');
+
+            ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
+
+            // document.getElementById('my_pic').appendChild(ctx.canvas);
+
+            let currentTime = this.$refs.video.currentTime.toPrecision(4) + "";
+            loadPictureToServer(canvas, currentTime);
+        },
+
+        fullscreen() {
+          const videoElement = document.getElementById("content-video");
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            }
+        }
+
     }
-  },
-  mounted() {
-    this.$refs.video.addEventListener('loadedmetadata', function () {
-      this.canvasWidth = this.videoWidth;
-      console.log('canvasWidth: ' + this.canvasWidth)
-      this.canvasHeight = this.videoHeight;
-    })
-
-    this.$refs.video.addEventListener('canplay', function () {
-      document.getElementById('duration').textContent = formatTime(this.duration);
-    });
-
-    this.$refs.video.addEventListener('timeupdate', function () {
-      this.videoCurrentTime = this.currentTime;
-      document.getElementById('currentTime').textContent = formatTime(this.currentTime)
-    });
-
-    this.$refs.video.addEventListener('timeupdate', function () {
-      const percentage = (this.currentTime / this.duration) * 100
-      document.getElementsByClassName('video-progress-filled')[0].style.width = `${percentage}%`
-    });
-
-  },
-  methods: {
-    //Play and Pause button
-    play(e) {
-      if (this.$refs.video.paused) {
-        this.$refs.video.play()
-        e.target.textContent = '❚❚'
-      } else {
-        this.$refs.video.pause()
-        e.target.textContent = '►'
-      }
-    },
-    volume(e) {
-      this.$refs.video.volume = e.target.value
-    },
-
-    //изменение progress-бара при нажатии
-    progress(e) {
-      let offsetWidth = document.getElementsByClassName('video-progress')[0].offsetWidth;
-      const progressTime = (e.offsetX / offsetWidth) * this.$refs.video.duration
-      this.$refs.video.currentTime = progressTime
-    },
-
-    //нужно сделать ещё одну функцию, привязывающую на несколько секунд надпись о сделанном скриншоте
-    screenshot() {
-      let canvas = document.createElement('canvas');
-      canvas.width = 1280;
-      console.log('canvasWidth: ' + canvas.width)
-      canvas.height = 720;
-      console.log('canvasHeight: ' + canvas.height)
-
-      let ctx = canvas.getContext('2d');
-
-      ctx.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
-
-      // document.getElementById('my_pic').appendChild(ctx.canvas);
-
-      let currentTime = this.$refs.video.currentTime.toPrecision(4) + "";
-      loadPictureToServer(canvas, currentTime);
-    },
-
-    getImages() {
-      loadPictureFromServer();
-    }
-  }
 }
 
 
@@ -149,7 +176,7 @@ html {
 }
 
 .video-player {
-    max-width: 720px;
+    max-width: 1080px;
     position: relative;
     overflow: hidden;
 }
@@ -179,6 +206,21 @@ html {
     background: black;
     color: white;
     padding: 10px;
+}
+
+.fullscreen-button {
+    width: 5%;
+    border: none;
+    position: relative;
+    right: -10px;
+    color: white;
+    background: rgba(0, 0, 0, 0);
+}
+
+.fullscreen-text {
+    letter-spacing: 15px;
+    font-size: 23px;
+    font-weight: bold;
 }
 
 .play-button:focus {
@@ -241,5 +283,6 @@ input[type="range"]::-webkit-slider-thumb {
 .video-player:hover .video-progress {
     height: 15px;
 }
+
 
 </style>

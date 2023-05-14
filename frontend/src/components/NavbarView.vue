@@ -9,7 +9,7 @@
                 <a class="navbar-brand" href="/frontend/public">Streamme</a>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a href="/video/sunset" class="nav-link">Video</a>
+                        <a href="/video/shrek" class="nav-link">Video</a>
                     </li>
                     <li class="nav-item">
                         <a href="/video/screens" class="nav-link">Screenshots</a>

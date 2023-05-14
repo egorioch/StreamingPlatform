@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router/router'
 import 'bootstrap/scss/bootstrap.scss'
 import 'lightbox2/src/css/lightbox.css'
+import 'video.js/dist/video-js.css'
 
 createApp(App)
   .use(router)
@@ -12,3 +13,4 @@ createApp(App)
 
 import 'bootstrap/dist/js/bootstrap'
 import 'lightbox2/src/js/lightbox'
+import 'video.js/dist/video'

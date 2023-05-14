@@ -21,7 +21,6 @@ export default {
   },
   async created() {
     this.imageList = await loadPictureFromServer();
-    console.log('imageList: ' + this.imageList);
   }
 
 }

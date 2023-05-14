@@ -16,6 +16,8 @@ export default {
 <style>
 body {
     background: linear-gradient(to top left, powderblue, pink);
-    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
 }
 </style>
