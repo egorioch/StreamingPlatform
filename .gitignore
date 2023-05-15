@@ -44,3 +44,8 @@ bin/
 /src/main/resources/application.properties
 /src/main/resources/screenshots
 /src/main/resources/video
+/assets
+/frontend/public
+/frontend/src/assets
+/frontend/src/plugins
+

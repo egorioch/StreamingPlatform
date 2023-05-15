@@ -26,6 +26,11 @@ public class ImageService {
         this.imageRepo = imageRepo;
     }
 
+    /**
+     * @param imageFile - файл типа multipart/data, отправляемый пост-запросом с сервера
+     * в нём хранятся такие данные, как: тайминг нажатия на клавишу screenshot(name),
+     * массив байтов(само изображение), размер изображения
+     */
     public void saveImage(MultipartFile imageFile) throws IOException {
         // Получение имени файла
         Image imageModel = new Image();
@@ -53,7 +58,6 @@ public class ImageService {
 
         imageRepo.save(imageModel);
 
-        System.out.println("findALL: " + imageRepo.findAll());
     }
 
     public ArrayList<HashMap<String, Object>> getImageList() {

@@ -29,10 +29,8 @@ public class StreamingController {
     @GetMapping(value="/video/{title}")
     public ResponseEntity<ResourceRegion> getVideos(@PathVariable String title,
                                                     @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
-        System.out.println("title(from client): " + title);
         System.out.println("range_header(from client): " + rangeHeader);
         return streamingService.getVideo(title, rangeHeader);
-
     }
 
 

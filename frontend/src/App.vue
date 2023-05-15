@@ -18,6 +18,5 @@ body {
     background: linear-gradient(to top left, powderblue, pink);
     overflow-x: hidden;
     overflow-y: hidden;
-
 }
 </style>

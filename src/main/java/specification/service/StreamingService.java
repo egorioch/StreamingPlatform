@@ -63,8 +63,6 @@ public class StreamingService {
         //забираем хедеры с запроса и устанавливаем свои
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM));
-        System.out.println("getPOSITION: " + resourceRegion.getPosition());
-        System.out.println("resourceRegion.getCount(): " + resourceRegion.getCount());
 //        headers.set("Content-Range", "bytes " + resourceRegion.getPosition() + "-" + resourceRegion.getCount() + "/" + resourceLength);
         headers.set("Accept-ranges", "bytes");
         headers.setContentLength(resourceRegion.getCount());

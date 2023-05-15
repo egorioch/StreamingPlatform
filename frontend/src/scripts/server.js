@@ -6,9 +6,7 @@
  */
 export async function loadPictureToServer(canvas, currentTime) {
   let imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
-  console.log("imageBlob: " + JSON.stringify(imageBlob));
   let formData = new FormData();
-  console.log('ImageURL(to server): ' + URL.createObjectURL(imageBlob));
   formData.append("image", imageBlob, `${currentTime}.jpeg`);
 
   await fetch(`http://localhost:8080/video/load`, {
